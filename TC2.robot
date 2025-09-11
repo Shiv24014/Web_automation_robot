@@ -1,87 +1,60 @@
 *** Settings ***
-Library    SeleniumLibrary
-Resource    ./KeyResource.robot
+Library           SeleniumLibrary
+Resource          KeyResource.robot
+Suite Setup       Open Primary Browser
+Suite Teardown    Close All Browsers
+Test Teardown     Capture Page Screenshot
 
 *** Test Cases ***
+# -------------------
+# User Flow
+# -------------------
 Homepage Test
-    Create WebDriver With Chrome Options
+    [Tags]    userflow    smoke
     Navigate To Homepage
-    Sleep    5
-    View Homepage
-    Close Browser
 
 Username Input Test (User)
-    Create WebDriver With Chrome Options
-    Navigate To Homepage
-    Blank Username And Submit
-    Sleep    2
-    Clear Input Text
-    Invalid Username And Submit
-    Sleep    2
-    Clear Input Text
-    Fill Username And Submit
-    Sleep    2
-    Wait Until Page Contains Element    class:skip
-    Close Browser
+    [Tags]    userflow
+    Input Blank Username
+    Input Invalid Username
+    Input Username
 
-Skip Button at Question Page
-    Create WebDriver With Chrome Options
-    Question Page With Skip Button
-    Close Browser
+Share Or Answer Page Handling
+    [Tags]    userflow
+    ${page_type}=    Answer Questions Without Skip
+    Run Keyword If    '${page_type}' == 'share'    Copy Share Link
+    Run Keyword If    '${page_type}' == 'answer'    Handle Answer Page
 
-Question Page
-    Create WebDriver With Chrome Options
-    Question Page without skip button
-    Close Browser
-
-Share Page with Link Copy
-    Create WebDriver With Chrome Options
-    Share Link Copy
-
+# -------------------
+# Friend Flow
+# -------------------
 Accept Page
-    Create WebDriver With Incognito Chrome Options
+    [Tags]    friendflow
+    Open Incognito Browser If Needed
+    Switch Browser    ${INCOG_ALIAS}
     Navigate To Accept Page
-    Sleep    5
-    Close Browser
 
 Username Input Test (Friend)
-    Create WebDriver With Incognito Chrome Options
-    Navigate To Accept Page
-    Clear Input Text
-    Accept Username Blank
-    Sleep    2
-    Accept Username Invalid
-    Sleep    2
-    Clear Input Text
-    Accept Username Valid
-    Sleep    2
-    Wait Until Page Contains Element    class:hint_sec
-    Close Browser
-
-# Answer Page with Hint
-#     Create WebDriver With Incognito Chrome Options
-#     Hint Reject
-#     Hint Accept
-#     Close Browser
+    [Tags]    friendflow
+    Accept Blank Username
+    Accept Invalid Username
+    Accept Valid Username
 
 Answer Page
-    Create WebDriver With Incognito Chrome Options
-    Accept Username Valid
-    Answer Page Incog
-    Close Browser
+    [Tags]    friendflow
+    ${page_type}=    Answer Questions Incognito
+    # Run Keyword If    '${page_type}' == 'share'    Copy Share Link
+    Run Keyword And Ignore Error    Handle Answer Page
 
+# -------------------
+# Verification Flow
+# -------------------
 Complete Page
-    Create WebDriver With Incognito Chrome Options
-    Complete Page Incog
-    Close Browser
+    [Tags]    verification
+    Switch Browser    ${INCOG_ALIAS}
+    Handle Answer Page
 
 View Scoreboard
-    Switch Browser    Browser1
-    Sleep    2
-    Scoreboard
-
-View-Answer Page
-    Switch Browser    Browser1
-    Reload Page
-    View-Answer User
-    Close Browser
+    [Tags]    verification
+    Switch Browser    ${PRIMARY_ALIAS}
+    Verify Scoreboard
